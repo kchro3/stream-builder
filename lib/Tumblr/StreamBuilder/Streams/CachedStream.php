@@ -140,14 +140,9 @@ abstract class CachedStream extends WrapStream
 
         // Step 3: Cache the inner_stream enumeration result.
         $cache_value = $this->serialize($inner_result);
-        if ($inner_result->get_size() === 0) {
-            // make empty result's cache ttl shorter.
-            // max at 15 min
-            $ttl = min($this->cache_ttl / 4, SECONDS_PER_MINUTE * 15);
-        } else {
-            $ttl = $this->cache_ttl;
+        if ($inner_result->get_size() > 0) {
+            $this->cache_provider->set($this->cache_object_type, $cache_key, $cache_value, $this->cache_ttl);
         }
-        $this->cache_provider->set($this->cache_object_type, $cache_key, $cache_value, $ttl);
 
         // Step 4: Slice the result and serve the requested based on cursor.
         // we will still use the same cursor's offset to slice the newly fetched results.
